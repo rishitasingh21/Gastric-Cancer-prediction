@@ -9,20 +9,6 @@ from skimage.segmentation import mark_boundaries
 import matplotlib.pyplot as plt
 from PIL import Image
 
-# Focal Loss Class
-class FocalLoss(nn.Module):
-    def __init__(self, alpha=0.25, gamma=2, num_classes=2):
-        super(FocalLoss, self).__init__()
-        self.alpha = alpha
-        self.gamma = gamma
-        self.num_classes = num_classes
-
-    def forward(self, inputs, targets):
-        inputs = torch.softmax(inputs, dim=1)
-        targets = torch.nn.functional.one_hot(targets, num_classes=self.num_classes).float()
-        ce_loss = -targets * torch.log(inputs)
-        fl_loss = self.alpha * (1 - inputs) ** self.gamma * ce_loss
-        return fl_loss.sum(dim=1).mean()
 
 # Directories
 input_dir = r"E:\rishita\GI"
