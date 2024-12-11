@@ -13,30 +13,6 @@ from sklearn.preprocessing import label_binarize
 from PIL import Image
 import torch.nn.functional as F
 
-# Focal Loss Class (same as training code)
-class FocalLoss(nn.Module):
-    def __init__(self, alpha=0.25, gamma=2, num_classes=2):
-        super(FocalLoss, self).__init__()
-        self.alpha = alpha  # balancing factor for the class weights
-        self.gamma = gamma  # focusing parameter
-        self.num_classes = num_classes
-
-    def forward(self, inputs, targets):
-        # Apply softmax to get probabilities
-        inputs = F.softmax(inputs, dim=1)
-
-        # Get probabilities for the target class
-        targets = F.one_hot(targets, num_classes=self.num_classes)
-        
-        # Compute the cross entropy loss
-        ce_loss = -targets * torch.log(inputs)
-        
-        # Compute Focal Loss
-        fl_loss = self.alpha * (1 - inputs) ** self.gamma * ce_loss
-        
-        # Return the mean loss across all examples
-        return fl_loss.sum(dim=1).mean()
-
 # Directories for Test
 input_dir = r"E:\rishita\GI"
 folders = ['abnormal160', 'normal160']
