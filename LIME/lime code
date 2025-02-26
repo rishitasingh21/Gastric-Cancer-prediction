@@ -10,11 +10,11 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 # Directories
-input_dir = r"E:\rishita\GI"
+input_dir = r"E:\rishita\Gashis160"
 folders = ['abnormal160', 'normal160']
 test_dir = r"E:\rishita\GI"  # Path to test directory
 models_dir = r"E:\rishita\code\GI\GiFocal_loss\focal Loss with metrics\model"  # Trained model directory
-results_dir = r"E:\rishita\testing\lime"
+results_dir = r"E:\rishita\code\GI\GiFocal_loss\focal Loss with metrics\test\limefinal"
 lime_dir = os.path.join(results_dir, "lime_images")  # Folder to save LIME results
 os.makedirs(lime_dir, exist_ok=True)
 
@@ -118,10 +118,14 @@ def predict(images):
 
 # Generate LIME Explanations
 for batch_idx, (images, labels, img_paths) in enumerate(test_loader):
+    images, labels = images.to(device), labels.to(device)
+
     for i in range(images.size(0)):
+        image_tensor = images[i].unsqueeze(0)
+        label = labels[i].item()
         img_path = img_paths[i]
         img_name = os.path.basename(img_path)
-        class_name = folders[labels[i].item()]
+        class_name = folders[label]
 
         # Convert tensor to numpy for LIME
         image_np = np.array(Image.open(img_path).convert('RGB'))  # Raw image
@@ -145,17 +149,20 @@ for batch_idx, (images, labels, img_paths) in enumerate(test_loader):
             hide_rest=False
         )
 
-        # Reduce the opacity of the highlight
-        alpha = 0.3  # Opacity level (0: fully transparent, 1: fully opaque)
-        overlay_color = np.array([0, 255, 0])  # Green in RGB
-        temp[mask == 1] = (1 - alpha) * temp[mask == 1] + alpha * overlay_color
+        # Plot the boundary visualization
+        plt.imshow(mark_boundaries(temp, mask))
 
+        # Remove the x and y axis ticks and labels
+        plt.axis('off')
 
-        # Save the visualization
-        fig, ax = plt.subplots(1, 1, figsize=(8, 8))
-        ax.imshow(mark_boundaries(temp.astype(np.uint8), mask))
-        ax.axis('off')
-        fig.savefig(os.path.join(lime_dir, f"{class_name}_{img_name}"), bbox_inches='tight')
-        plt.close(fig)
+        # Save the explanation image without title
+        save_path = os.path.join(
+            lime_dir,
+            f"{predicted_class_idx}_lime_{img_name.split('.')[0]}_predicted_class_{predicted_class_idx}.png"
+        )
+        plt.savefig(save_path, bbox_inches='tight', pad_inches=0)
+        plt.close()
 
-print("LIME explanations generated and saved.")
+        print(f"Saved LIME explanation for {img_name} with predicted class {predicted_class_idx}")
+
+print("All LIME explanations have been generated and saved.")
